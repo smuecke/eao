@@ -80,5 +80,5 @@ conf = {
 ev = RealVectorEvaluator(np.random.uniform(-20, 20, size=N))
 print('target: {}'.format(ev.target_vec))
 opt = Optimizer(ev, config=conf)
-res = opt.run([RealVector.random(N) for _ in range(5)], generations=1000)
+res = opt.run([RealVector.random(N) for _ in range(5)], generations=1000, log="opt_log.csv")
 print_lines(res)

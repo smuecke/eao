@@ -31,4 +31,4 @@ class Evaluator:
 
         individuals: iterable containing Individuals.
         """
-        return np.fromiter([ self.eval(ind) for ind in individuals ], dtype=np.float64)
+        return [ self.eval(ind) for ind in individuals ]
