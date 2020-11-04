@@ -6,10 +6,6 @@ class Individual:
     Base class for individuals that can be used in an Optimizer.
     """
 
-
-    def __init__(self):
-        self.loss = None
-
     def copy(self):
         """copy.
         
@@ -30,7 +26,6 @@ class Individual:
 
         Mutate in-place. Additional arguments may contain mutation rate etc.
         """
-        self.loss = None
         pass
 
     def cross(self, other, **kwargs):
@@ -40,5 +35,4 @@ class Individual:
 
         other: Individual or list of Individuals to cross with.
         """
-        self.loss = None
         pass

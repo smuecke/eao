@@ -18,8 +18,8 @@ class Evaluator:
 
         individual: Individual to evaluate.
         """
-        if individual.loss is not None:
-            return individual.loss
+        if individual.loss_ is not None:
+            return individual.loss_
         else:
             raise NotImplementedError()
             # write loss value to individual

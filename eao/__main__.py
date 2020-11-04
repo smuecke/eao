@@ -11,15 +11,13 @@ N = 10 # size of vector
 class RealVector(Individual):
 
     def __init__(self, vec):
-        super().__init__()
         self.vec = vec
 
     def __repr__(self):
-        return str(self.vec) + " (loss={})".format(self.loss)
+        return str(self.vec) + " (loss={})".format(self.loss_)
 
     def copy(self):
         ind = self.__class__(self.vec.copy())
-        ind.loss = self.loss
         return ind
 
     @classmethod
@@ -37,14 +35,12 @@ class RealVector(Individual):
         indices = np.random.choice(self.vec.size, size=k, replace=False)
         noise = np.random.normal(loc=0, scale=mutation_rate, size=k)
         self.vec[indices] += noise
-        self.loss = None
 
     def cross(self, other, crossover_rate=0.5):
         # uniform crossover
         k = max(1, np.random.binomial(self.vec.size, crossover_rate))
         indices = np.random.choice(self.vec.size, size=k, replace=False)
         self.vec[indices] = other.vec[indices]
-        self.loss = None
 
 
 class RealVectorEvaluator(Evaluator):
@@ -53,11 +49,11 @@ class RealVectorEvaluator(Evaluator):
         self.target_vec = target_vector
 
     def eval(self, ind):
-        if ind.loss is not None:
-            return ind.loss
+        if ind.loss_ is not None:
+            return ind.loss_
         else:
             loss = np.linalg.norm(ind.vec - self.target_vec, 2)
-            ind.loss = loss
+            ind.loss_ = loss
             return loss
 
 
@@ -68,13 +64,20 @@ def print_lines(ls):
 conf = {
     'parents': 5,
     'offspring': 10,
+
     'do_crossover': True,
+    'do_self_adaption': True,
+
     'mutation_prob': 0.9,
     'crossover_kwargs': {
         'crossover_rate': 0.5},
     'mutation_kwargs': {
         'mutation_rate': 1,
-        'mutation_width': 0.1}
+        'mutation_width': 0.1},
+
+    'mutation_kwargs_bounds': {
+        'mutation_width': (0.0, 1.0)
+    }
 }
 
 ev = RealVectorEvaluator(np.random.uniform(-20, 20, size=N))
