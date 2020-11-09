@@ -49,12 +49,7 @@ class RealVectorEvaluator(Evaluator):
         self.target_vec = target_vector
 
     def eval(self, ind):
-        if ind.loss_ is not None:
-            return ind.loss_
-        else:
-            loss = np.linalg.norm(ind.vec - self.target_vec, 2)
-            ind.loss_ = loss
-            return loss
+        return np.linalg.norm(ind.vec - self.target_vec, 2)
 
 
 def print_lines(ls):
