@@ -8,8 +8,12 @@ class Evaluator:
     to match Individual implementation.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, logger=None):
+        self.logger_ = logger
+
+    def log(self, *args, log_level=1, id=0, **kwargs):
+        if self.logger_ is not None:
+            self.logger_.log(*args, log_level=log_level, id=id, **kwargs)
 
     def eval(self, individual):
         """eval.
@@ -18,10 +22,7 @@ class Evaluator:
 
         individual: Individual to evaluate.
         """
-        if individual.loss_ is not None:
-            return individual.loss_
-        else:
-            raise NotImplementedError()
+        raise NotImplementedError()
 
     def eval_all(self, individuals):
         """eval_all.
