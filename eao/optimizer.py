@@ -1,7 +1,7 @@
+import logging
 import numpy as np
 
 from .config         import default_config
-from .logging        import logger
 from datetime        import datetime
 from itertools       import count
 from multiprocessing import Pool
@@ -69,8 +69,8 @@ class Optimizer:
                 ind.config_[op + '_kwargs'][arg] = val_
 
     def run(self, initial, generations=10):
-        logger.log('Starting run on {}'.format(datetime.now().strftime("%c")), level=1, id=0)
-        logger.log('Configuration is {}; running for {} generations'.format(', '.join([k+'='+str(v) for k,v in self.config.items()]), generations), level=1, id=1)
+        logging.info(f'(0) Starting run on {datetime.now().strftime("%c")}')
+        logging.info(f'(1) Configuration is {", ".join([k+"="+str(v) for k,v in self.config.items()])}; running for {generations} generations')
         id_counter = count(start=0, step=1)
 
         npar = self.config['parents']
@@ -97,7 +97,7 @@ class Optimizer:
 
         # initially evaluate parents
         parent_loss = self.evaluator.eval_all(parents)
-        logger.log("Parents have loss {}".format(', '.join(['#{}={}'.format(p.id_, p.loss_) for p in parents])), level=1, id=2)
+        logging.info('(2) Parents have loss {}'.format(', '.join(['#{}={}'.format(p.id_, p.loss_) for p in parents])))
 
         # if log is not None:
         #     logfile = open(log, 'w')
@@ -107,11 +107,11 @@ class Optimizer:
 
         # initially sort parents
         parents.sort(key=lambda ind: ind.loss_)
-        logger.log("Sorting initial parent population by loss", level=2, id=3)
+        logging.info("(3) Sorting initial parent population by loss")
 
         offspring = []
         for generation in trange(generations):
-            logger.log('Entering generation {}'.format(generation), level=1, id=4)
+            logging.info(f'(4) Entering generation {generation}')
 
             # sample random parent indices
             parent_ixs = np.random.randint(0, npar, size=noff)
@@ -119,20 +119,20 @@ class Optimizer:
             for ix in parent_ixs:
                 ind = parents[ix].copy()
                 ind.id_ = next(id_counter)
-                logger.log('Copied #{} to new offspring #{}'.format(parents[ix].id_, ind.id_), level=2, id=5)
+                logging.info(f'(5) Copied #{parents[ix].id_} to new offspring #{ind.id_}')
 
                 if self.config['do_self_adaption']:
                     ind.config_ = parents[ix].config_.copy()
                     self.__mutate_parameters(ind)
                     ind_config = ind.config_ # use already mutated parameters
-                    logger.log('Mutated #{}\'s parameters to {}'.format(ind.id_, ', '.join([k+'='+str(v) for k,v in ind.config_.items()])), level=2, id=6)
+                    logging.debug('(6) Mutated #{}\'s parameters to {}')
 
                 if self.config['do_crossover'] and coinflip(self.config['crossover_prob']):
                     other_ind = parents[(ix + np.random.randint(1, npar)) % npar]
-                    logger.log('Crossing #{} with #{}'.format(ind.id_, other_ind.id_), level=2, id=7)
+                    logging.debug(f'(7) Crossing #{ind.id_} with #{other_ind.id_}')
                     ind.cross(other_ind, **ind_config['crossover_kwargs'])
                 if self.config['do_mutate'] and coinflip(self.config['mutation_prob']):
-                    logger.log('Mutating #{}'.format(ind.id_), level=2, id=8)
+                    logging.debug(f'(8) Mutating #{ind.id_}')
                     ind.mutate(**ind_config['mutation_kwargs'])
 
                 ind.loss_ = None # invalidate loss (just in case)
@@ -140,10 +140,10 @@ class Optimizer:
 
             # evaluate offspring and sort by loss
             self.evaluator.eval_all(offspring)
-            logger.log("Offspring have loss {}".format(', '.join(['#{}={}'.format(ind.id_, ind.loss_) for ind in offspring])), level=1, id=9)
+            logging.info("(9) Offspring have loss {}".format(', '.join(['#{}={}'.format(ind.id_, ind.loss_) for ind in offspring])))
 
             offspring.sort(key=lambda ind: ind.loss_)
-            logger.log("Sorting offspring population by loss", level=2, id=10)
+            logging.debug("(10) Sorting offspring population by loss")
 
             if self.config['selection'] == 'plus':
                 # perform plus selection:
@@ -153,7 +153,7 @@ class Optimizer:
                 pix, oix = 0, 0
                 while (pix < npar) and (oix < noff):
                     if parents[pix].loss_ >= offspring[oix].loss_:
-                        logger.log('offspring #{} replaces parent #{}'.format(offspring[oix].id_, parents[pix].id_), level=2, id=11)
+                        logging.debug(f'(11) offspring #{offspring[oix].id_} replaces parent #{parents[pix].id_}')
                         parents.insert(pix, offspring[oix].copy())
                         del parents[-1]
                         parents[pix].id_ = offspring[oix].id_
@@ -175,6 +175,6 @@ class Optimizer:
                 raise ValueError('Somehow you managed to slip in an unknown selection type. Have you messed with configuration checking?')
 
             offspring.clear()
-            logger.log("Parents have loss {}".format(', '.join(['#{}={}'.format(p.id_, p.loss_) for p in parents])), level=1, id=2)
+            logging.info("(2) Parents have loss {}".format(', '.join(['#{}={}'.format(p.id_, p.loss_) for p in parents])))
 
         return parents

@@ -1,9 +1,9 @@
+import logging
 import numpy as np
 
 from .individual import Individual
 from .evaluator import Evaluator
 from .optimizer import Optimizer
-from .logging import logger, LOG_VERBOSE
 
 N = 10 # size of vector
 
@@ -35,14 +35,14 @@ class RealVector(Individual):
         indices = np.random.choice(self.vec.size, size=k, replace=False)
         noise = np.random.normal(loc=0, scale=mutation_rate, size=k)
         self.vec[indices] += noise
-        logger.log('Added ' + ', '.join(['{} to vec[{}]'.format(noise_, ix) for ix, noise_ in zip(indices, noise)]) + 'of #'+str(self.id_), level=2, id=12)
+        logging.debug('(12) Added ' + ', '.join(['{} to vec[{}]'.format(noise_, ix) for ix, noise_ in zip(indices, noise)]) + 'of #'+str(self.id_))
 
     def cross(self, other, crossover_rate=0.5):
         # uniform crossover
         k = max(1, np.random.binomial(self.vec.size, crossover_rate))
         indices = np.random.choice(self.vec.size, size=k, replace=False)
         self.vec[indices] = other.vec[indices]
-        logger.log('#{} took indices {} from #{}'.format(self.id_, ', '.join(map(str,indices)), other.id_), level=2, id=13)
+        logging.debug('(13) #{} took indices {} from #{}'.format(self.id_, ', '.join(map(str,indices)), other.id_))
 
 
 class RealVectorEvaluator(Evaluator):
@@ -79,11 +79,11 @@ conf = {
 }
 
 
-logger.set_output('test_log.txt')
-logger.set_level(LOG_VERBOSE)
+logging.basicConfig(filename='test_log.txt', level=logging.DEBUG)
 
 ev = RealVectorEvaluator(np.random.uniform(-20, 20, size=N))
-print('target: {}'.format(ev.target_vec))
+print(f'target: {ev.target_vec}')
 opt = Optimizer(ev, config=conf)
-res = opt.run([RealVector.random(N) for _ in range(5)], generations=500)
+initial_population = [RealVector.random(N) for _ in range(5)]
+res = opt.run(initial_population, generations=500)
 print_lines(res)

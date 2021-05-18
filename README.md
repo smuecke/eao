@@ -76,7 +76,19 @@ When implementing `random`, make sure the initial individuals are not unreasonab
 
 ### Evaluator
 
-* Coming soon!
+The `Evaluator` class contains the loss function that we'll have to specify for our optimization problem.
+We only need to implement a single method:
+
+```python
+class RealVectorEvaluator(Evaluator):
+
+    def eval(self, rv):
+        even_indices = rv[::2]
+        odd_indices = rv[1::2]
+        return np.sum((even_indices-1)**2) + np.sum((odd_indices+1)**2)
+```
+
+For our example, we'll be be adding all even indices' distance to 1 and all odd indices' distance to -1, so that our global optimum is a vector of alternating 1 and -1. This nonsensical loss function is purely for demonstration purposes.
 
 ### Configuration
 
